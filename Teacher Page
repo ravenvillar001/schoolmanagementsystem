@@ -1,0 +1,246 @@
+//Import packages
+
+import java.sql.*;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+ 
+public class AddTeacher extends javax.swing.JFrame {
+
+    /**
+     * Creates new form AddTeacher
+     */
+    public AddTeacher() {
+        initComponents();
+        Connection ();
+        loader();
+        DisplayRecord();
+        
+    }
+
+   Connection con;
+   PreparedStatement pst;
+   ResultSet rs;
+    
+//Connector method
+    public void Connection (){
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost/klddb","root","");
+            
+            
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
+//loader method
+    public void loader(){
+        
+        try {
+            pst = con.prepareStatement("SELECT employeeID FROM employee");
+            rs = pst.executeQuery();
+            EmpID.removeAllItems();
+            while (rs.next()){
+                EmpID.addItem(rs.getString(1));
+                
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+
+    //DisplatRecord method
+
+    public void DisplayRecord(){
+        
+        try {
+            int i;
+            pst = con.prepareStatement("SELECT * FROM employee");
+            rs = pst.executeQuery();
+            ResultSetMetaData rss = rs.getMetaData();
+            i = rss.getColumnCount();
+            
+            DefaultTableModel df = (DefaultTableModel)jTable1.getModel();
+            df.setRowCount(0);
+            
+            while(rs.next()){
+                
+                Vector v2 = new Vector();
+                for(int q = 1; q<=i; q++){
+                    
+                    v2.add(rs.getString("employeeID"));
+                    v2.add(rs.getString("firstName"));
+                    v2.add(rs.getString("lastName"));
+                    v2.add(rs.getString("email"));
+                    v2.add(rs.getString("age"));
+                    v2.add(rs.getString("username"));
+                    v2.add(rs.getString("password"));
+                    v2.add(rs.getString("type"));
+                   
+                }
+                df.addRow(v2);
+                
+                
+            }
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        }
+
+//Add button
+
+try {
+            // TODO add your handling code here:
+            //Add button
+            String fname = txtFname.getText();
+            String lname = txtLname.getText();
+            String email = txtEmail.getText();
+            String age = txtAge.getText();
+            String uname = txtUname.getText();
+            String pass = txtPass.getText();
+            String utype = txtUtype.getText();
+            
+            pst = con.prepareStatement("INSERT INTO employee (firstName,lastName,email,age,username,password,type) VALUES(?,?,?,?,?,?,?)");
+            pst.setString(1, fname);
+            pst.setString(2, lname);
+            pst.setString(3,email);        
+            pst.setString(4,age); 
+            pst.setString(5, uname); 
+            pst.setString(6, pass); 
+            pst.setString(7, utype); 
+            int i = pst.executeUpdate();
+            if (i == 1) {
+                JOptionPane.showMessageDialog(this,"Record has been successfully Added!!");
+                txtFname.setText("");
+                txtLname.setText("");
+                txtEmail.setText("");
+                txtAge.setText("");
+                txtUname.setText("");
+                txtPass.setText("");
+                txtUtype.setText("");
+               DisplayRecord();
+               loader();
+                
+            }
+            else {
+                JOptionPane.showMessageDialog(this,"Record failed to saved!!");
+            }
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+//Update button
+
+ try {
+            // TODO add your handling code here:
+            //Update button
+            String fname = txtFname.getText();
+            String lname = txtLname.getText();
+            String email = txtEmail.getText();
+            String age = txtAge.getText();
+            String uname = txtUname.getText();
+            String pass = txtPass.getText();
+            String tp = txtUtype.getText();
+            String EmployeeID = EmpID.getSelectedItem().toString();
+            pst = con.prepareStatement("UPDATE employee SET firstName=?,lastName=?,email=?,age=?,username=?,password=?,type=? WHERE employeeID=?");
+            pst.setString(1, fname);
+            pst.setString(2,lname);
+            pst.setString(3,email);        
+            pst.setString(4,age); 
+            pst.setString(5,uname); 
+            pst.setString(6,pass); 
+            pst.setString(7,tp); 
+            pst.setString(8,EmployeeID); 
+            
+            int i = pst.executeUpdate();
+            if(i == 1) {
+                JOptionPane.showMessageDialog(this,"Record Successfully Updated!!!!");
+                txtFname.setText("");
+                txtLname.setText("");
+                txtEmail.setText("");
+                txtAge.setText("");
+                txtUname.setText("");
+                txtPass.setText("");
+                txtUtype.setText("");
+                txtFname.requestFocus();
+                DisplayRecord();
+                loader();
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            
+//Search Button
+
+try {
+            // TODO add your handling code here:
+            //Search Button
+            String empId = EmpID.getSelectedItem().toString();
+            pst = con.prepareStatement("SELECT * FROM employee WHERE employeeID =?");
+            
+            pst.setString(1, empId);
+            rs = pst.executeQuery();
+            if (rs.next()== true) {
+                 txtFname.setText(rs.getString(2));
+                 txtLname.setText(rs.getString(3));
+                 txtEmail.setText(rs.getString(4));
+                 txtAge.setText(rs.getString(5));
+                 txtUname.setText(rs.getString(6));
+                 txtPass.setText(rs.getString(7));
+                 txtUtype.setText(rs.getString(8));
+                 DisplayRecord();
+            }
+            else {
+                
+                JOptionPane.showMessageDialog(this, "No Record Found!");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+
+//Delete Button
+ try {
+            // TODO add your handling code here:
+            //Delete button
+            String EmployeeID = EmpID.getSelectedItem().toString();
+            pst = con.prepareStatement("DELETE FROM employee WHERE employeeID = ?");
+            pst.setString(1, EmployeeID);
+           
+             int i = pst.executeUpdate();
+            if (i == 1){
+                JOptionPane.showMessageDialog(this,"Record has been succesfully deleted!!");
+                txtFname.setText("");
+                txtLname.setText("");
+                txtEmail.setText("");
+                txtAge.setText("");
+                txtUname.setText("");
+                txtPass.setText("");
+                txtUtype.setText("");
+                txtFname.requestFocus();
+                DisplayRecord();
+                loader();
+            }
+            else {
+                JOptionPane.showMessageDialog(this,"Record failed to delete!!");
+            }
+            
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
