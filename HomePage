@@ -1,0 +1,6 @@
+ // Add Teacher
+ new teacherPage().setVisible(true);
+        dispose();
+//Add Subject
+ new SubjectPage().setVisible(true);
+        dispose();
