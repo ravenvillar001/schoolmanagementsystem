@@ -1,0 +1,217 @@
+//Import packages
+
+import java.sql.*;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+public class AddSubject extends javax.swing.JFrame {
+
+    /**
+     * Creates new form AddSubject
+     */
+    public AddSubject() {
+        initComponents();
+        Connection ();
+        loader();
+        DisplayRecord();
+    }
+        
+   Connection con;
+   PreparedStatement pst;
+   ResultSet rs;
+    
+    public void Connection (){
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost/klddb","root","");
+            
+            
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
+      public void loader(){
+        
+        try {
+            pst = con.prepareStatement("SELECT subjectID FROM subjects");
+            rs = pst.executeQuery();
+            subID.removeAllItems();
+            while (rs.next()){
+                subID.addItem(rs.getString(1));
+                
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+   public void DisplayRecord(){
+        try {
+            int i;
+            pst = con.prepareStatement("SELECT * FROM subjects");
+            rs = pst.executeQuery();
+            ResultSetMetaData rss = rs.getMetaData();
+            i = rss.getColumnCount();
+            
+            DefaultTableModel df = (DefaultTableModel)jTable2.getModel();
+            df.setRowCount(0);
+            while(rs.next()){
+                
+                Vector v2 = new Vector();
+                for(int q = 1; q<=i; q++){
+                    
+                    v2.add(rs.getString("subjectID"));
+                    v2.add(rs.getString("subjectName"));
+                    v2.add(rs.getString("SubjectCode"));
+                    v2.add(rs.getString("section"));
+                    v2.add(rs.getString("description"));
+                    v2.add(rs.getString("teacherID"));
+                    
+                   
+                }
+                df.addRow(v2);
+                
+            
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddSubject.class.getName()).log(Level.SEVERE, null, ex);
+        }
+   }
+
+//Add button
+
+ try {
+            // TODO add your handling code here:
+            String subName = txtSubname.getText();
+            String subCode = txtSubCode.getText();
+            String sec = txtSec.getText();
+            String descrip = txtDescript.getText();
+            String teacherid = txtTid.getText();
+            pst = con.prepareStatement("INSERT INTO subjects (subjectName,SubjectCode,section,description,teacherID) VALUES(?,?,?,?,?)");
+            pst.setString(1, subName);
+            pst.setString(2, subCode);
+            pst.setString(3,sec);        
+            pst.setString(4,descrip); 
+            pst.setString(5, teacherid); 
+           
+            int i = pst.executeUpdate();
+            if (i == 1) {
+                JOptionPane.showMessageDialog(this,"Record has been successfully Added!!");
+                txtSubname.setText("");
+                txtSubCode.setText("");
+                txtSec.setText("");
+                txtDescript.setText("");
+                txtTid.setText("");
+                DisplayRecord();
+                loader();
+            }
+             else {
+                JOptionPane.showMessageDialog(this,"Record failed to saved!!");
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AddSubject.class.getName()).log(Level.SEVERE, null, ex);
+        }
+           
+
+//Update button
+try {
+            // TODO add your handling code here:
+            //Update button
+            
+            String subName = txtSubname.getText();
+            String subCode = txtSubCode.getText();
+            String sec = txtSec.getText();
+            String descrip = txtDescript.getText();
+            String teacherid = txtTid.getText();
+            String SubjectID = subID.getSelectedItem().toString();
+            
+            pst = con.prepareStatement("UPDATE subjects SET subjectName=?,SubjectCode=?,section=?,description=?,teacherID=? WHERE subjectID=?");
+            pst.setString(1, subName);
+            pst.setString(2, subCode);
+            pst.setString(3,sec);
+            pst.setString(4,descrip);
+            pst.setString(5, teacherid); 
+            pst.setString(6,SubjectID); 
+            
+            int i = pst.executeUpdate();
+            if(i == 1) {
+                JOptionPane.showMessageDialog(this,"Record Successfully Updated!!!!");
+                txtSubname.setText("");
+                txtSubCode.setText("");
+                txtSec.setText("");
+                txtDescript.setText("");
+                txtTid.setText("");
+                DisplayRecord();
+                loader();
+                
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddSubject.class.getName()).log(Level.SEVERE, null, ex);
+        }
+//Search Button
+
+try {
+            // TODO add your handling code here:
+            // Search Button
+            String SubjectID = subID.getSelectedItem().toString();
+            pst = con.prepareStatement("SELECT * FROM subjects WHERE subjectID =?");
+            
+            pst.setString(1, SubjectID);
+            rs = pst.executeQuery();
+            
+            if (rs.next()== true) {
+                 txtSubname.setText(rs.getString(2));
+                 txtSubCode.setText(rs.getString(3));
+                 txtSec.setText(rs.getString(4));
+                 txtDescript.setText(rs.getString(5));
+                 txtTid.setText(rs.getString(6));
+                 DisplayRecord();
+                 
+                 
+            }
+            else {
+                
+                JOptionPane.showMessageDialog(this, "No Record Found!");
+            }
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(AddSubject.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            
+//Delete Button
+try {
+            // TODO add your handling code here:
+            //Delete button
+            String subjectID = subID.getSelectedItem().toString();
+            pst = con.prepareStatement("DELETE FROM subjects WHERE subjectID = ?");
+            pst.setString(1, subjectID);
+            
+            int i = pst.executeUpdate();
+            if (i == 1){
+                JOptionPane.showMessageDialog(this,"Record has been succesfully deleted!!");
+                txtSubname.setText("");
+                txtSubCode.setText("");
+                txtSec.setText("");
+                txtDescript.setText("");
+                txtTid.setText("");
+                txtSubname.requestFocus();
+                DisplayRecord();
+                loader();
+            }
+            else {
+                JOptionPane.showMessageDialog(this,"Record failed to delete!!");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddSubject.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+
+
