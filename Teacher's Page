@@ -1,0 +1,107 @@
+import java.sql.*;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+public class TeacherPage extends javax.swing.JFrame {
+
+    /**
+     * Creates new form TeacherPage
+     */
+    public TeacherPage() {
+        initComponents();
+        Connection ();
+        loader();
+        DisplayRecord();
+    }
+    Connection con;
+   PreparedStatement pst;
+   ResultSet rs;
+    
+    public void Connection (){
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            con = DriverManager.getConnection("jdbc:mysql://localhost/klddb","root","");
+            
+            
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
+public void loader(){
+        
+        try {
+            pst = con.prepareStatement("SELECT teacherID FROM subjects");
+            rs = pst.executeQuery();
+            txtTid.removeAllItems();
+            while (rs.next()){
+                txtTid.addItem(rs.getString(1));
+                
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddTeacher.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    public void DisplayRecord(){
+        try {
+            int i;
+            pst = con.prepareStatement("SELECT * FROM subjects");
+            rs = pst.executeQuery();
+            ResultSetMetaData rss = rs.getMetaData();
+            i = rss.getColumnCount();
+            
+            DefaultTableModel df = (DefaultTableModel)jTable1.getModel();
+            df.setRowCount(0);
+            while(rs.next()){
+                
+                Vector v2 = new Vector();
+                for(int q = 1; q<=i; q++){
+                    
+                    v2.add(rs.getString("subjectID"));
+                    v2.add(rs.getString("subjectName"));
+                    v2.add(rs.getString("SubjectCode"));
+                    v2.add(rs.getString("section"));
+                    v2.add(rs.getString("description"));
+                    v2.add(rs.getString("teacherID"));
+                    
+                   
+                }
+                df.addRow(v2);
+                
+            
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AddSubject.class.getName()).log(Level.SEVERE, null, ex);
+        }
+   }
+
+//Search Button
+try {
+            // TODO add your handling code here:
+            //Search Button
+            String teacherId = txtTid.getSelectedItem().toString();
+            pst = con.prepareStatement("SELECT * FROM subjects WHERE teacherID =?");
+            
+            pst.setString(1, teacherId);
+            rs = pst.executeQuery();
+            if (rs.next()== true){
+                 txtSubname.setText(rs.getString(2));
+                 txtSubCode.setText(rs.getString(3));
+                 txtSec.setText(rs.getString(4));
+                 txtDescript.setText(rs.getString(5));
+                 DisplayRecord();
+                 loader();
+            }
+            else{
+                JOptionPane.showMessageDialog(this, "No Record Found!");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(TeacherPage.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
